@@ -1,3 +1,3 @@
 # Machine-Learning-Projects
 
-This Repositort is for my Machine Learning practising projects 
+This Repository is for my Machine Learning practising projects in Octave/Matlab and Python
