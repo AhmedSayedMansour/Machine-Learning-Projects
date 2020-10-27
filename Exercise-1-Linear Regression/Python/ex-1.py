@@ -17,7 +17,14 @@ plt.ylabel('Profit in $10,000s')
 plt.xlabel('Population of City in 10,000s')
 plt.show()
 
-#hypothesis function
+#hypothesis function without victorization
+def h2(theta,X):
+    arr = np.zeros((X.shape[0],1))
+    for i in range (X.shape[0]):
+        arr[i][0] = theta[0][0]*X[i][0] + theta[1][0]*X[i][1]
+    print(arr)
+
+#hypothesis function vicorized
 def h(theta,X):
     return np.dot(X,theta)
 
@@ -57,7 +64,7 @@ theta, thetahistory, jvec = Gradiantdescent(X,initial_theta)
 
 def plotConvergence(jvec):
     plt.figure(figsize=(10,6))
-    plt.plot(range(len(jvec)),jvec,'bo')
+    plt.plot( range(len(jvec)) ,jvec,'bo')
     plt.grid(True)
     plt.title("Convergence of Cost Function")
     plt.xlabel("Iteration number")
