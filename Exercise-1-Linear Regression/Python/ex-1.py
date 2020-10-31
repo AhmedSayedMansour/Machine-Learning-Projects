@@ -1,3 +1,7 @@
+#----------------------------------------------------------------------------------------
+## Linear Regression with one variable
+#----------------------------------------------------------------------------------------
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -47,7 +51,7 @@ def Gradiantdescent(X, initial_theta):
     theta = initial_theta
     jvec = [] #all cost functions
     thetahistory = [] #theta history
-    for i in range(iterations):
+    for _ in range(iterations):
         tmptheta = theta
         jvec.append(computeCost(theta,X,y))
 
@@ -89,6 +93,8 @@ plt.xlabel('Population of City in 10,000s')
 plt.legend()
 plt.show()
 
+#plotting 3D
+
 #Import necessary matplotlib tools for 3d plots
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib import cm
@@ -100,16 +106,89 @@ ax = fig.gca(projection='3d')
 xvals = np.arange(-10,10,.5)
 yvals = np.arange(-1,4,.1)
 myxs, myys, myzs = [], [], []
-for david in xvals:
-    for kaleko in yvals:
-        myxs.append(david)
-        myys.append(kaleko)
-        myzs.append(computeCost(np.array([[david], [kaleko]]),X,y))
+for a in xvals:
+    for b in yvals:
+        myxs.append(a)
+        myys.append(b)
+        myzs.append( computeCost(np.array([[a], [b]]),X,y) )
 
 scat = ax.scatter(myxs,myys,myzs,c=np.abs(myzs),cmap=plt.get_cmap('YlOrRd'))
 
 plt.xlabel(r'$\theta_0$',fontsize=30)
 plt.ylabel(r'$\theta_1$',fontsize=30)
 plt.title('Cost (Minimization Path Shown in Blue)',fontsize=30)
-plt.plot([x[0] for x in thetahistory],[x[1] for x in thetahistory],jvec,'bo-')
+plt.plot( [x[0] for x in thetahistory] , [x[1] for x in thetahistory] , jvec , 'bo-' )
 plt.show()
+
+#----------------------------------------------------------------------------------------
+## Linear Regression with multiple variables
+#----------------------------------------------------------------------------------------
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+datafile = 'data/ex1data2.txt'
+cols = np.loadtxt(datafile,delimiter=',',usecols=(0,1,2),unpack=True)
+X = np.transpose(np.array(cols[:-1]))
+y = np.transpose(np.array(cols[-1:]))
+m = y.size 
+X = np.insert(X,0,1,axis=1)
+
+#Plotting data
+plt.grid(True)
+plt.xlim([-100,5000]) #to show how much area of houses data far from each value
+dummy = plt.hist(X[:,0],label = 'col1')
+dummy = plt.hist(X[:,1],label = 'col2')
+dummy = plt.hist(X[:,2],label = 'col3')
+plt.title('Clearly we need feature normalization.')
+plt.xlabel('Column Value')
+plt.ylabel('Counts')
+dummy = plt.legend()
+plt.show()
+
+#Feature normalizing --> (value-mean)/std
+XNormalized = X.copy()
+means, stds = [], []
+for i in range(XNormalized.shape[1]):
+    means.append( np.mean(XNormalized[:,i]) )
+    stds.append( np.std(XNormalized[:,i]) )
+    #Skip the first column we don't need to normalize this
+    if not i: continue
+    XNormalized[:,i] = (XNormalized[:,i] - means[-1])/stds[-1]
+
+#Plotting data after Features normalized
+plt.grid(True)
+plt.xlim([-5,5])
+dummy = plt.hist(XNormalized[:,0],label = 'col1')
+dummy = plt.hist(XNormalized[:,1],label = 'col2')
+dummy = plt.hist(XNormalized[:,2],label = 'col3')
+plt.title('Features Normalized')
+plt.xlabel('Column Value')
+plt.ylabel('Counts')
+dummy = plt.legend()
+plt.show()
+
+#Run gradiant descent on multiple variables
+initial_theta = np.zeros((XNormalized.shape[1],1))
+theta, thetahistory, jvec = Gradiantdescent(XNormalized,initial_theta)
+
+#Plot convergence of cost function:
+plotConvergence(jvec)
+plt.show()
+
+#checking on values
+print("Final result theta parameters: \n",theta)
+print("Check of result: What is price of house with 1650 square feet and 3 bedrooms?")
+test = np.array([1650.,3.])
+ytestscaled = [ (test[x]-means[x+1])/stds[x+1]     for x in range( len(test) ) ]        #Apply feature normalization
+ytestscaled.insert(0,1)
+print("$%0.2f" % float(h(theta,ytestscaled)))
+
+#Normal Equation
+from numpy.linalg import inv
+def normalEquation(X,y):
+    return np.dot( np.dot( inv(np.dot(X.T,X)), X.T ) , y)
+
+#Test on normal equation
+print("Normal equation prediction for price of house with 1650 square feet and 3 bedrooms")
+print("$%0.2f" % float( h( normalEquation(X,y),[1,1650.,3] )))
